@@ -17,3 +17,6 @@ export function audioExt(name: string, type: string) {
   const ext = map[sub] ?? sub;
   return AUDIO_EXT.includes(ext) ? ext : null;
 }
+
+export const MAX_AUDIO_SECONDS = 20 * 60;
+export const MAX_REF_SECONDS = 12;
