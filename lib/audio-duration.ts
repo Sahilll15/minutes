@@ -2,7 +2,7 @@
 export function audioDurationSeconds(b: Uint8Array): number | null {
   try {
     const d = sniff(b);
-    return d !== null && Number.isFinite(d) && d >= 0 ? d : null;
+    return d !== null && Number.isFinite(d) && d > 0 ? d : null;
   } catch {
     return null;
   }
