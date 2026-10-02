@@ -1,0 +1,31 @@
+Client kickoff: Northwind site rebuild (2026-10-06)
+
+Dana: Thanks for making time, Tom. The goal today is to agree scope for the Northwind site rebuild and the first milestones.
+
+Tom: Great. The big thing for us is the spring campaign. The new site has to be live before March first, that date doesn't move.
+
+Dana: Understood. Our plan is to launch the marketing pages first, and do the product catalog in a second phase.
+
+Tom: That's fine, as long as the campaign landing pages are in phase one.
+
+Dana: Then let's lock that in. Phase one is the marketing pages plus the campaign landing pages. Catalog moves to phase two.
+
+Aisha: On the technical side, we'll need access to your current CMS and the analytics account. Without that we can't plan the content migration.
+
+Tom: I'll get you both. I can send the credentials over by Friday.
+
+Aisha: Thanks. My main concern is the product data. If it lives in that old ERP system, the export could take weeks, and that could push phase two.
+
+Tom: Honestly, I don't know where it lives. Our IT team owns that. I'm not sure who the right contact is.
+
+Dana: Okay, that's an open question then. Who owns the product data export. Tom, could you find us a contact on the IT side?
+
+Tom: Yes, I'll find someone and introduce you this week.
+
+Dana: Perfect. On our side, I'll send a written scope and timeline by October fifteenth. Aisha will do a technical audit of the current site.
+
+Aisha: I can have the audit done by the twentieth of October.
+
+Tom: One question from my boss. Do we need to budget for hosting separately, or is that included?
+
+Dana: Good question, I'll check with our finance team and come back to you. Let's set a weekly check in on Tuesdays. Thanks everyone.

@@ -1,0 +1,73 @@
+{
+  "id": "standup",
+  "title": "Product standup",
+  "date": "2026-10-05",
+  "speakers": {
+    "Priya": {
+      "voice": "coral",
+      "instructions": "Upbeat product manager running a quick standup. Brisk, friendly, clear."
+    },
+    "Marcus": {
+      "voice": "onyx",
+      "instructions": "Backend engineer with a deep, low voice. Calm, slightly dry, steady pace."
+    },
+    "Lena": {
+      "voice": "ballad",
+      "instructions": "Designer with a light Scottish accent. Thoughtful and warm, slower pace, a little hesitant when raising concerns."
+    }
+  },
+  "lines": [
+    [
+      "Priya",
+      "Morning everyone. Quick standup, we have the billing launch on the fourteenth so let's keep it tight. Marcus, you want to start?"
+    ],
+    [
+      "Marcus",
+      "Sure. The new invoice service is merged. I'm still fixing the proration bug when someone downgrades mid cycle. I should have that done by Wednesday."
+    ],
+    [
+      "Priya",
+      "Okay. Is that blocking the launch?"
+    ],
+    [
+      "Marcus",
+      "It could be. If proration is wrong, customers get charged twice. So yes, I'd call it a launch risk until it's fixed."
+    ],
+    [
+      "Priya",
+      "Got it. Lena?"
+    ],
+    [
+      "Lena",
+      "I finished the new pricing page. The only open thing is whether we show annual prices by default or monthly. Sales wants annual, I'm not sure that's right for small teams."
+    ],
+    [
+      "Priya",
+      "Let's decide that now. We'll show monthly by default, with an annual toggle. We can revisit after launch if conversion looks bad."
+    ],
+    [
+      "Lena",
+      "Works for me. I'll update the mockups today and send them to Marcus."
+    ],
+    [
+      "Marcus",
+      "One more thing. We still don't know if finance needs the invoices exported to their old system. Nobody has answered that."
+    ],
+    [
+      "Priya",
+      "Right. I'll chase finance and get an answer by Thursday. Marcus, can you also write the migration script for existing customers?"
+    ],
+    [
+      "Marcus",
+      "Yes, I'll have a draft of the migration script by next Monday, the twelfth."
+    ],
+    [
+      "Lena",
+      "Also, the support team hasn't seen any of this yet. If they get questions on launch day they won't know what to say."
+    ],
+    [
+      "Priya",
+      "Good point. I'll book a thirty minute walkthrough with support for Friday. Okay, that's it. Thanks all."
+    ]
+  ]
+}
