@@ -1,8 +1,14 @@
 # Minutes
 
-Record a meeting in the browser or upload the audio, and get minutes you can check. You get a 3 sentence summary, decisions, action items with owners and due dates, open questions and risks. Every item links back to the transcript lines it came from. Click an item and the transcript scrolls to those lines, highlights the quoted phrase and moves the audio there.
+Meeting minutes from recorded or uploaded audio, where every item links back to the transcript lines it came from.
 
-It's for anyone who writes up meetings and needs to show where each point came from: PMs, team leads, agency account managers.
+**Live demo:** https://minutes-sand.vercel.app
+
+![Minutes demo: running the product standup sample, the transcribing step, then finished minutes with a summary, five action items with owners and due dates, and a click on an action item that highlights the quoted line in the transcript](docs/demo.gif)
+
+## Why it exists
+
+Whoever writes up a meeting often has to show where each point came from: PMs, team leads, agency account managers. Minutes records a meeting in the browser or takes an upload and returns a 3 sentence summary, decisions, action items with owners and due dates, open questions and risks. Click an item and the transcript scrolls to those lines, highlights the quoted phrase and moves the audio there.
 
 Two sample meetings ship in `public/samples/` (a product standup and a client kickoff), so you can run the whole pipeline in one click.
 
@@ -20,7 +26,7 @@ Two sample meetings ship in `public/samples/` (a product standup and a client ki
 
 Meetings live in `localStorage` as a list. Uploaded and recorded audio goes into IndexedDB so playback still works after a reload. Nothing is stored on a server.
 
-## Cost and abuse controls
+### Cost and abuse controls
 
 - Per-IP sliding window rate limits, tight by default: 3 transcriptions and 5 extractions per hour. The client IP comes from `x-real-ip`, then the last `x-forwarded-for` entry, because the leftmost entry can be spoofed. Addresses are normalized and IPv6 is grouped by /64, so rotating addresses inside one subscriber's range or adding a port does not get a fresh limit. The key store is capped at 10,000 entries and evicts the least recently used keys instead of clearing all counters. Malformed limit env vars fall back to the defaults.
 - A caller who is already over the limit is refused before the upload is read. Bodies are read as a stream with a hard byte cap, and the read stops once the cap is passed, even when `content-length` is missing, wrong or chunked (413). Uploads are capped at 4 MB (Vercel bodies max out near 4.5 MB), speaker references at 4 clips of 256 KB each, and file type is checked.
@@ -32,6 +38,22 @@ Meetings live in `localStorage` as a list. Uploaded and recorded audio goes into
 - The transcript goes into the prompt as untrusted data, and the prompt tells the model to ignore instructions inside it.
 
 Rough cost per 2 minute meeting from the token usage I measured: about 1.9k audio input tokens and 3k output tokens for transcription, plus about 1.4k input and 1.1k output tokens for extraction. That's a few cents per meeting, and transcription is most of it.
+
+## Screenshots
+
+![Minutes home page with an empty meeting list, two sample meetings with Run pipeline buttons, and options to record in the browser or upload an audio file](docs/home.webp)
+
+![Minutes result for the product standup sample: a note that all 12 items cite the transcript, the summary with timestamps, action items for Marcus, Lena and Priya with due dates, and the transcript on the right with the cited phrase highlighted](docs/result.webp)
+
+A 22 second recording of one sample run is in [docs/demo.mp4](docs/demo.mp4). Transcription took about 42 seconds and extraction about 7 seconds on the live site, and both waits are cut down in the video.
+
+## Stack
+
+- Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
+- OpenAI Node SDK: `gpt-4o-transcribe-diarize` for transcription with speaker labels, Responses API with Structured Outputs (`gpt-5.4-mini`) for extraction, `gpt-4o-mini-tts` for the sample audio
+- zod for request and output schemas
+- `localStorage` and IndexedDB for meetings and audio, nothing stored on a server
+- Deployed on Vercel
 
 ## Run it
 
@@ -57,3 +79,12 @@ The sample audio was generated once with `gpt-4o-mini-tts`, using a different vo
 | `DAILY_AUDIO_MINUTES` | `120` | Audio minutes per instance per UTC day, 503 after that |
 
 The rate limiter and the audio budget are in memory, so each serverless instance keeps its own counts and several warm instances allow that many times the budget. The IP key is only as trustworthy as the proxy in front of the app. Vercel overwrites `x-real-ip`, but behind a proxy that passes client headers through, a caller can pick their own key. That's fine for a demo. A shared store would be needed for strict limits.
+
+## Related
+
+Other small apps built on the OpenAI API:
+
+- [Interview Coach](https://github.com/Sahilll15/interview-coach): a spoken mock interview with a report that quotes your answers. Live at https://interview-coach-seven-rose.vercel.app
+- [SplitSnap](https://github.com/Sahilll15/splitsnap): split a restaurant bill from a receipt photo, exact to the cent. Live at https://splitsnap-sandy.vercel.app
+- [ShipNotes](https://github.com/Sahilll15/shipnotes): cited release notes from a GitHub compare range. Live at https://shipnotes-mu.vercel.app
+- [AskCSV](https://github.com/Sahilll15/askcsv): ask plain English questions about a CSV, answered with checked SQL in the browser
