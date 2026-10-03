@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Minutes architecture</title>
+<desc id="d">The browser uploads or records audio and posts it to a Vercel route that parses the audio length, checks limits and reserves the daily audio budget in Upstash Redis, then calls OpenAI diarized transcription. A second route turns the transcript into cited minutes with the OpenAI Responses API and verifies the citations.</desc>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0969da"/></marker>
+<marker id="as" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#0969da"/></marker>
+<marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8c959f"/></marker>
+<marker id="gs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#8c959f"/></marker>
+</defs>
+<rect x="0.5" y="0.5" width="1199" height="639" rx="16" fill="#ffffff" stroke="#e3e6ea"/>
+<rect x="24" y="72" width="250" height="500" rx="12" fill="#eef4ff"/>
+<text x="40" y="96" font-size="12" fill="#57606a" text-anchor="start" font-weight="600" letter-spacing="0.06em">CLIENT</text>
+<rect x="300" y="72" width="380" height="324" rx="12" fill="#f6f8fa"/>
+<text x="316" y="96" font-size="12" fill="#57606a" text-anchor="start" font-weight="600" letter-spacing="0.06em">VERCEL</text>
+<rect x="300" y="416" width="380" height="156" rx="12" fill="#edf8f1"/>
+<text x="316" y="440" font-size="12" fill="#57606a" text-anchor="start" font-weight="600" letter-spacing="0.06em">DATA</text>
+<rect x="706" y="72" width="470" height="500" rx="12" fill="#f5f0ff"/>
+<text x="722" y="96" font-size="12" fill="#57606a" text-anchor="start" font-weight="600" letter-spacing="0.06em">EXTERNAL SERVICES</text>
+<rect x="117.0" y="104.0" width="64" height="64" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+<g transform="translate(125 112)"><rect x="4" y="8" width="40" height="32" rx="4" fill="#ffffff" stroke="#1f2328" stroke-width="2"/><path d="M4 16H44" stroke="#1f2328" stroke-width="2"/><circle cx="9" cy="12" r="1.6" fill="#cf222e"/><circle cx="14" cy="12" r="1.6" fill="#bf8700"/><circle cx="19" cy="12" r="1.6" fill="#1a7f37"/><rect x="10" y="22" width="18" height="3" rx="1.5" fill="#8c959f"/><rect x="10" y="29" width="28" height="3" rx="1.5" fill="#d0d7de"/></g>
+<text x="149" y="190.0" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Browser</text>
+<text x="149" y="208.0" font-size="12" fill="#57606a" text-anchor="middle">React app</text>
+<rect x="44" y="220" width="210" height="154" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+<text x="58" y="248" font-size="12" fill="#57606a" text-anchor="start" font-weight="600" letter-spacing="0.06em">IN THE BROWSER</text>
+<circle cx="62" cy="268" r="2.5" fill="#8c959f"/>
+<text x="72" y="272" font-size="12" fill="#1f2328" text-anchor="start">MediaRecorder or upload</text>
+<circle cx="62" cy="290" r="2.5" fill="#8c959f"/>
+<text x="72" y="294" font-size="12" fill="#1f2328" text-anchor="start">Audio kept in IndexedDB</text>
+<circle cx="62" cy="312" r="2.5" fill="#8c959f"/>
+<text x="72" y="316" font-size="12" fill="#1f2328" text-anchor="start">Meetings in localStorage</text>
+<circle cx="62" cy="334" r="2.5" fill="#8c959f"/>
+<text x="72" y="338" font-size="12" fill="#1f2328" text-anchor="start">Click a citation to seek</text>
+<circle cx="62" cy="356" r="2.5" fill="#8c959f"/>
+<text x="72" y="360" font-size="12" fill="#1f2328" text-anchor="start">Markdown, .ics, email</text>
+<rect x="338.0" y="268.0" width="64" height="64" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+<g transform="translate(346 276)"><path d="M24 8L42 38H6z" fill="#1f2328"/></g>
+<text x="370" y="354.0" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Vercel</text>
+<text x="370" y="372.0" font-size="12" fill="#57606a" text-anchor="middle">Next.js 16 functions</text>
+<rect x="455" y="96" width="210" height="52" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+<rect x="467" y="110.0" width="24" height="24" rx="6" fill="#eaeef2"/>
+<text x="479" y="127.0" font-size="15" fill="#1f2328" text-anchor="middle" font-weight="700">ƒ</text>
+<text x="501" y="119.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="600">POST /api/extract</text>
+<text x="501" y="137.0" font-size="12" fill="#57606a" text-anchor="start">minutes, checks citations</text>
+<rect x="455" y="216" width="210" height="52" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+<rect x="467" y="230.0" width="24" height="24" rx="6" fill="#eaeef2"/>
+<text x="479" y="247.0" font-size="15" fill="#1f2328" text-anchor="middle" font-weight="700">ƒ</text>
+<text x="501" y="239.0" font-size="14" fill="#1f2328" text-anchor="start" font-weight="600">POST /api/transcribe</text>
+<text x="501" y="257.0" font-size="12" fill="#57606a" text-anchor="start">reads audio length first</text>
+<rect x="528.0" y="438.0" width="64" height="64" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+<g transform="translate(536 446)"><path d="M8 12V36C8 40.4 15.2 44 24 44C32.8 44 40 40.4 40 36V12" fill="#ffffff" stroke="#1a7f37" stroke-width="2"/><ellipse cx="24" cy="12" rx="16" ry="6" fill="#ffffff" stroke="#1a7f37" stroke-width="2"/><path d="M8 24C8 28.4 15.2 32 24 32C32.8 32 40 28.4 40 24" fill="none" stroke="#1a7f37" stroke-width="2"/></g>
+<text x="560" y="524.0" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Upstash Redis</text>
+<text x="560" y="542.0" font-size="12" fill="#57606a" text-anchor="middle">rate limits, audio budget</text>
+<rect x="928.0" y="90.0" width="64" height="64" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+<g transform="translate(936 98)"><path d="M24 4L41.3 14V34L24 44L6.7 34V14z" fill="#ffffff" stroke="#1f2328" stroke-width="2" stroke-linejoin="round"/><path d="M24 13C25 21 27 23 35 24C27 25 25 27 24 35C23 27 21 25 13 24C21 23 23 21 24 13z" fill="#1f2328"/></g>
+<text x="960" y="176.0" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">OpenAI Responses API</text>
+<text x="960" y="194.0" font-size="12" fill="#57606a" text-anchor="middle">gpt-5.4-mini</text>
+<rect x="928.0" y="210.0" width="64" height="64" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+<g transform="translate(936 218)"><path d="M24 4L41.3 14V34L24 44L6.7 34V14z" fill="#ffffff" stroke="#1f2328" stroke-width="2" stroke-linejoin="round"/><path d="M24 13C25 21 27 23 35 24C27 25 25 27 24 35C23 27 21 25 13 24C21 23 23 21 24 13z" fill="#1f2328"/></g>
+<text x="960" y="296.0" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">OpenAI Transcription</text>
+<text x="960" y="314.0" font-size="12" fill="#57606a" text-anchor="middle">gpt-4o-transcribe-diarize</text>
+<path d="M181 150 H420 V242 H451" fill="none" stroke="#0969da" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M545 268 V434" fill="none" stroke="#0969da" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M665 242 H924" fill="none" stroke="#0969da" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)" marker-start="url(#as)"/>
+<path d="M578 268 V434" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="6 5" stroke-linejoin="round" marker-end="url(#g)"/>
+<path d="M181 122 H451" fill="none" stroke="#0969da" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M665 122 H924" fill="none" stroke="#0969da" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)" marker-start="url(#as)"/>
+<path d="M44 608 H84" stroke="#0969da" stroke-width="2" marker-end="url(#a)"/>
+<text x="96" y="612" font-size="12" fill="#57606a" text-anchor="start">Request path</text>
+<path d="M214 608 H254" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="6 5" marker-end="url(#g)"/>
+<text x="266" y="612" font-size="12" fill="#57606a" text-anchor="start">Secondary or best effort</text>
+<text x="474" y="612" font-size="12" fill="#57606a" text-anchor="start">Step, see the list below</text>
+<circle cx="300" cy="150" r="11" fill="#0969da" stroke="#ffffff" stroke-width="2"/>
+<text x="300" y="154" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<rect x="230" y="163" width="140" height="18" rx="9" fill="#ffffff" fill-opacity="0.92"/>
+<text x="300" y="176" font-size="12" fill="#57606a" text-anchor="middle">audio + speaker clips</text>
+<circle cx="545" cy="300" r="11" fill="#0969da" stroke="#ffffff" stroke-width="2"/>
+<text x="545" y="304" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<rect x="433" y="331" width="98" height="18" rx="9" fill="#ffffff" fill-opacity="0.92"/>
+<text x="525" y="344" font-size="12" fill="#57606a" text-anchor="end">limit + budget</text>
+<circle cx="790" cy="242" r="11" fill="#0969da" stroke="#ffffff" stroke-width="2"/>
+<text x="790" y="246" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<circle cx="578" cy="392" r="11" fill="#0969da" stroke="#ffffff" stroke-width="2"/>
+<text x="578" y="396" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<circle cx="300" cy="122" r="11" fill="#0969da" stroke="#ffffff" stroke-width="2"/>
+<text x="300" y="126" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<circle cx="790" cy="122" r="11" fill="#0969da" stroke="#ffffff" stroke-width="2"/>
+<text x="790" y="126" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+<circle cx="455" cy="608" r="11" fill="#0969da"/>
+<text x="455" y="612" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+</svg>

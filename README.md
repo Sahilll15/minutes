@@ -39,6 +39,19 @@ Meetings live in `localStorage` as a list. Uploaded and recorded audio goes into
 
 Rough cost per 2 minute meeting from the token usage I measured: about 1.9k audio input tokens and 3k output tokens for transcription, plus about 1.4k input and 1.1k output tokens for extraction. That's a few cents per meeting, and transcription is most of it.
 
+## Architecture
+
+![Minutes architecture: the browser posts audio to a Vercel route that reads the audio length, checks the limit and reserves the daily audio budget in Upstash Redis, then calls OpenAI diarized transcription, and a second route turns the transcript into cited minutes with the Responses API](docs/architecture.svg)
+
+1. The browser records with MediaRecorder or takes an upload and posts the audio, plus any speaker reference clips, to `POST /api/transcribe`.
+2. The route parses the audio length from the container, then checks the per IP limit and reserves those seconds from the daily audio budget in Upstash Redis.
+3. Only then does it call `gpt-4o-transcribe-diarize`, which returns speaker labelled segments.
+4. If OpenAI reports a longer duration than the header claimed, the extra seconds are charged to the budget afterwards.
+5. The browser posts the segments to `POST /api/extract`, which checks its own per IP limit in Redis.
+6. The route calls the Responses API with Structured Outputs, then drops or flags citations that do not match the transcript before returning the minutes.
+
+**Why it is built this way.** The API key stays on the server, and nothing about a meeting is stored there; audio and minutes stay in the browser. Audio length is bounded and the budget reserved before the paid call, and the counts live in Redis so every instance sees the same numbers.
+
 ## Screenshots
 
 ![Minutes home page with an empty meeting list, two sample meetings with Run pipeline buttons, and options to record in the browser or upload an audio file](docs/home.webp)
