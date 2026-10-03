@@ -6,6 +6,7 @@ import { formatTime, speakerName } from '@/lib/transcript';
 import type { Meeting, MeetingSource } from '@/lib/types';
 import { Composer } from './Composer';
 import { MeetingView } from './MeetingView';
+import { SiteFooter } from './SiteFooter';
 import { transcribe } from './pipeline';
 import { meetingsStore, saveAudio, useMeetings } from './store';
 import { AvatarStack, btn, Icon, type IconName, StatusBadge } from './ui';
@@ -132,9 +133,9 @@ export default function App() {
         </div>
       </header>
 
-      <div className="lg:grid lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="flex flex-col lg:grid lg:grid-cols-[360px_minmax(0,1fr)]">
         <aside
-          className={`${mobileDetail ? 'hidden' : 'block'} min-h-[calc(100dvh-64px)] border-line bg-white pb-28 lg:sticky lg:top-16 lg:block lg:h-[calc(100dvh-64px)] lg:min-h-0 lg:overflow-y-auto lg:border-r lg:pb-6 thin-scroll`}
+          className={`${mobileDetail ? 'hidden' : 'block'} border-line bg-white pb-6 lg:sticky lg:top-16 lg:block lg:h-[calc(100dvh-64px)] lg:min-h-0 lg:overflow-y-auto lg:border-r lg:pb-6 thin-scroll`}
           aria-label="Meetings"
         >
           <div className="space-y-4 p-4 sm:px-6 lg:px-4">
@@ -195,14 +196,19 @@ export default function App() {
           </div>
         </aside>
 
-        <main className={`${mobileDetail ? 'block' : 'hidden'} min-w-0 pb-28 lg:block lg:pb-0`}>
+        {/* With no meeting open, the intro (the page's only h1) stays visible above the list on small screens. */}
+        <main
+          className={`${mobileDetail ? 'block pb-6' : current ? 'hidden' : 'order-first block border-b border-line bg-white lg:border-b-0 lg:bg-transparent'} min-w-0 lg:order-none lg:block lg:pb-0`}
+        >
           {current ? (
             <MeetingView key={current.id} meeting={current} onBack={() => setMobileDetail(false)} />
           ) : (
-            <Composer onCreate={create} onSample={runSample} />
+            <Composer compact={!mobileDetail} onCreate={create} onSample={runSample} />
           )}
         </main>
       </div>
+
+      <SiteFooter className="pb-24 lg:pb-0" />
 
       <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center lg:hidden" aria-label="Primary">
         <div className="flex items-center gap-1.5 rounded-full bg-white/95 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] ring-1 ring-line backdrop-blur">

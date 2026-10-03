@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { AUDIO_EXT, MAX_AUDIO_BYTES } from '@/lib/limits';
 import { SAMPLES, type Sample } from '@/lib/samples';
@@ -7,6 +8,8 @@ import { formatTime } from '@/lib/transcript';
 import { Avatar, AvatarStack, btn, Icon } from './ui';
 
 type Props = {
+  /** Below lg, show only the intro so the meeting list stays the main view. */
+  compact?: boolean;
   onCreate: (input: { title: string; date: string; blob: Blob; source: 'recorded' | 'uploaded'; duration: number }) => void;
   onSample: (s: Sample) => void;
 };
@@ -22,8 +25,10 @@ function mb(bytes: number) {
 
 const MIME = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
 const SAFE_LIMIT = MAX_AUDIO_BYTES - 64 * 1024;
+const INTRO =
+  'Record or upload up to 4 MB of audio. You get speaker labels, a summary, decisions, action items, open questions and risks, each linked to the exact moment it was said.';
 
-export function Composer({ onCreate, onSample }: Props) {
+export function Composer({ compact = false, onCreate, onSample }: Props) {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(today);
   const [error, setError] = useState<string | null>(null);
@@ -60,19 +65,30 @@ export function Composer({ onCreate, onSample }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl animate-rise space-y-6 p-4 sm:p-8">
+    <div className={`mx-auto w-full max-w-3xl animate-rise space-y-6 p-4 sm:p-8 ${compact ? 'pb-0 sm:pb-0 lg:pb-8' : ''}`}>
       <div>
-        <p className="text-sm font-semibold text-ink-faint">New meeting</p>
-        <h1 className="mt-1 text-[28px] leading-tight font-extrabold tracking-tight sm:text-[34px]">
-          <span className="sr-only">Minutes, AI meeting minutes: </span>
+        <h1 className="text-[28px] leading-tight font-extrabold tracking-tight sm:text-[34px]">
+          <span className="mb-1 block text-sm font-semibold tracking-normal text-ink-soft">
+            Minutes, AI meeting minutes<span className="sr-only">: </span>
+          </span>
           Turn a meeting into minutes you can check.
         </h1>
         <p className="mt-2 max-w-xl text-[15px] text-ink-soft">
-          Record or upload up to 4 MB of audio. You get speaker labels, a summary, decisions, action items, open questions and risks, each linked to the exact moment it was said.
+          {compact ? (
+            <>
+              <span className="lg:hidden">Record or upload meeting audio and get a summary, decisions and action items, each linked to the moment it was said.</span>
+              <span className="hidden lg:inline">{INTRO}</span>
+            </>
+          ) : (
+            INTRO
+          )}{' '}
+          <Link href="/how-it-works" className="font-semibold whitespace-nowrap text-ink underline underline-offset-4">
+            How it works
+          </Link>
         </p>
       </div>
 
-      <section aria-labelledby="samples-h" className="rounded-[28px] bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.03)] ring-1 ring-line sm:p-5">
+      <section aria-labelledby="samples-h" className={`${compact ? 'hidden lg:block' : ''} rounded-[28px] bg-white p-4 shadow-[0_1px_0_rgba(0,0,0,0.03)] ring-1 ring-line sm:p-5`}>
         <div className="flex items-center justify-between gap-3">
           <h2 id="samples-h" className="flex items-center gap-2 text-[15px] font-bold">
             <Icon name="sparkle" size={16} /> Try a sample meeting
@@ -86,7 +102,7 @@ export function Composer({ onCreate, onSample }: Props) {
         </div>
       </section>
 
-      <section aria-labelledby="own-h" className="rounded-[28px] bg-white p-4 ring-1 ring-line sm:p-5">
+      <section aria-labelledby="own-h" className={`${compact ? 'hidden lg:block' : ''} rounded-[28px] bg-white p-4 ring-1 ring-line sm:p-5`}>
         <h2 id="own-h" className="text-[15px] font-bold">Your own meeting</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_170px]">
           <label className="block">
@@ -144,6 +160,7 @@ export function Composer({ onCreate, onSample }: Props) {
               accept="audio/*,.m4a,.mp3,.wav,.webm,.ogg,.flac,.mp4"
               className="sr-only"
               tabIndex={-1}
+              aria-label="Choose an audio file"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) accept(f);

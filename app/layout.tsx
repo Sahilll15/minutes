@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Mono, Manrope } from 'next/font/google';
+import { APP_ID, PERSON_ID, SITE_URL, WEBSITE_ID } from '@/lib/seo';
+import { JsonLd } from './components/JsonLd';
 import './globals.css';
 
 const manrope = Manrope({
@@ -16,7 +18,7 @@ const mono = IBM_Plex_Mono({
   variable: '--font-plex-mono',
 });
 
-const siteUrl = 'https://minutes-sand.vercel.app';
+const siteUrl = SITE_URL;
 const title = 'Minutes: AI meeting minutes from audio, with sources';
 const description =
   'Record or upload meeting audio and get minutes with a summary, decisions and action items, each linked to the moment in the transcript it came from.';
@@ -37,20 +39,46 @@ export const metadata: Metadata = {
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: 'Minutes',
-  url: siteUrl,
-  description,
-  applicationCategory: 'BusinessApplication',
-  operatingSystem: 'Web',
-  isAccessibleForFree: true,
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  author: {
-    '@type': 'Person',
-    name: 'Sahil Chalke',
-    url: 'https://sahilchalke.com',
-    sameAs: ['https://github.com/Sahilll15', 'https://x.com/chalke1015'],
-  },
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': WEBSITE_ID,
+      name: 'Minutes',
+      url: siteUrl,
+      description,
+      inLanguage: 'en',
+      publisher: { '@id': PERSON_ID },
+      author: { '@id': PERSON_ID },
+    },
+    {
+      '@type': 'WebApplication',
+      '@id': APP_ID,
+      name: 'Minutes',
+      url: siteUrl,
+      description,
+      isPartOf: { '@id': WEBSITE_ID },
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      screenshot: `${siteUrl}/opengraph-image.png`,
+      featureList: [
+        'Record in the browser or upload an audio file up to 4 MB',
+        'Transcript with speaker labels',
+        'Summary, decisions, action items, open questions and risks',
+        'Every item links to the transcript lines it came from',
+        'Follow-up email draft, Markdown and calendar (.ics) export',
+      ],
+      author: { '@id': PERSON_ID },
+    },
+    {
+      '@type': 'Person',
+      '@id': PERSON_ID,
+      name: 'Sahil Chalke',
+      url: 'https://sahilchalke.com',
+      sameAs: ['https://github.com/Sahilll15', 'https://x.com/chalke1015'],
+    },
+  ],
 };
 
 export const viewport: Viewport = { themeColor: '#f3f3f5' };
@@ -59,7 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${manrope.variable} ${mono.variable}`}>
       <body>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+        <JsonLd data={jsonLd} />
         {children}
       </body>
     </html>
