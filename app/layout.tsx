@@ -16,9 +16,41 @@ const mono = IBM_Plex_Mono({
   variable: '--font-plex-mono',
 });
 
+const siteUrl = 'https://minutes-sand.vercel.app';
+const title = 'Minutes: AI meeting minutes from audio, with sources';
+const description =
+  'Record or upload meeting audio and get minutes with a summary, decisions and action items, each linked to the moment in the transcript it came from.';
+
 export const metadata: Metadata = {
-  title: 'Minutes',
-  description: 'Record or upload a meeting and get minutes where every decision and action item links back to the moment it was said.',
+  metadataBase: new URL(siteUrl),
+  alternates: { canonical: '/' },
+  title: { default: title, template: '%s | Minutes' },
+  description,
+  keywords: ['meeting minutes', 'AI meeting notes', 'meeting transcription', 'meeting summary', 'action items from meetings', 'meeting notes from audio', 'transcript with speaker labels'],
+  applicationName: 'Minutes',
+  authors: [{ name: 'Sahil Chalke', url: 'https://sahilchalke.com' }],
+  creator: 'Sahil Chalke',
+  openGraph: { type: 'website', siteName: 'Minutes', title, description, url: '/', locale: 'en_US' },
+  twitter: { card: 'summary_large_image', creator: '@chalke1015', title, description },
+  robots: { index: true, follow: true },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Minutes',
+  url: siteUrl,
+  description,
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: {
+    '@type': 'Person',
+    name: 'Sahil Chalke',
+    url: 'https://sahilchalke.com',
+    sameAs: ['https://github.com/Sahilll15', 'https://x.com/chalke1015'],
+  },
 };
 
 export const viewport: Viewport = { themeColor: '#f3f3f5' };
@@ -26,7 +58,10 @@ export const viewport: Viewport = { themeColor: '#f3f3f5' };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${manrope.variable} ${mono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+        {children}
+      </body>
     </html>
   );
 }

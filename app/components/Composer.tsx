@@ -63,7 +63,10 @@ export function Composer({ onCreate, onSample }: Props) {
     <div className="mx-auto w-full max-w-3xl animate-rise space-y-6 p-4 sm:p-8">
       <div>
         <p className="text-sm font-semibold text-ink-faint">New meeting</p>
-        <h1 className="mt-1 text-[28px] leading-tight font-extrabold tracking-tight sm:text-[34px]">Turn a meeting into minutes you can check.</h1>
+        <h1 className="mt-1 text-[28px] leading-tight font-extrabold tracking-tight sm:text-[34px]">
+          <span className="sr-only">Minutes, AI meeting minutes: </span>
+          Turn a meeting into minutes you can check.
+        </h1>
         <p className="mt-2 max-w-xl text-[15px] text-ink-soft">
           Record or upload up to 4 MB of audio. You get speaker labels, a summary, decisions, action items, open questions and risks, each linked to the exact moment it was said.
         </p>
