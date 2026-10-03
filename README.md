@@ -28,10 +28,10 @@ Meetings live in `localStorage` as a list. Uploaded and recorded audio goes into
 
 ### Cost and abuse controls
 
-- Per-IP sliding window rate limits, tight by default: 3 transcriptions and 5 extractions per hour. The client IP comes from `x-real-ip`, then the last `x-forwarded-for` entry, because the leftmost entry can be spoofed. Addresses are normalized and IPv6 is grouped by /64, so rotating addresses inside one subscriber's range or adding a port does not get a fresh limit. The key store is capped at 10,000 entries and evicts the least recently used keys instead of clearing all counters. Malformed limit env vars fall back to the defaults.
+- Per-IP rate limits, tight by default: 3 transcriptions and 5 extractions per hour. The window starts at your first counted request, and the 429 response says when it resets. Counts live in a shared Upstash Redis database, so they hold across every serverless instance. Each check is one Lua script that increments and sets the expiry atomically, and a request over the limit is refused without being counted. If Redis is configured but unreachable, both routes return 503 rather than letting the request through. Without the Redis env vars (local dev, tests) the app counts in memory instead. The client IP comes from `x-real-ip`, then the last `x-forwarded-for` entry, because the leftmost entry can be spoofed. Addresses are normalized and IPv6 is grouped by /64, so rotating addresses inside one subscriber's range or adding a port does not get a fresh limit. The in-memory fallback is capped at 10,000 keys and evicts the least recently used ones instead of clearing all counters. Malformed limit env vars fall back to the defaults.
 - A caller who is already over the limit is refused before the upload is read. Bodies are read as a stream with a hard byte cap, and the read stops once the cap is passed, even when `content-length` is missing, wrong or chunked (413). Uploads are capped at 4 MB (Vercel bodies max out near 4.5 MB), speaker references at 4 clips of 256 KB each, and file type is checked.
 - Transcription is billed by audio length, not bytes, and 4 MB of low bitrate audio can hold well over an hour. So before any OpenAI call the server reads the duration from the container (`lib/audio-duration.ts`, covering WAV, MP3 by walking every frame, FLAC, Ogg, WebM including MediaRecorder files without a Duration element, and MP4/M4A including fragmented files). Audio over 20 minutes gets a 413, speaker clips over 12 seconds get a 400, and a file whose length cannot be read gets a 415.
-- Each instance also has a daily audio budget (`DAILY_AUDIO_MINUTES`, 120 by default). A request reserves its declared length up front and gets a 503 once the budget is used. A crafted file can understate its length in the header, so after transcription the server also charges whatever extra duration OpenAI reports.
+- The whole deployment also has a daily audio budget (`DAILY_AUDIO_MINUTES`, 120 by default), counted in Redis in whole seconds under `budget:minutes:audio-seconds:<YYYY-MM-DD>`. The length is parsed from the audio container before any OpenAI call. A request reserves that length up front and gets a 503 once the budget is used. A crafted file can understate its length in the header, so after transcription the server also charges whatever extra duration OpenAI reports.
 - Extraction input has a zod schema and caps on segment count, text length and body size. Every limit is checked before the OpenAI call.
 - The browser recorder uses 32 kbps Opus and stops itself near the 4 MB cap.
 - The OpenAI client retries twice with a timeout. Upstream errors become short user-facing messages, and a meeting that fails mid-step can be retried from that step.
@@ -59,9 +59,9 @@ A 22 second recording of one sample run is in [docs/demo.mp4](docs/demo.mp4). Tr
 
 ```bash
 npm install
-cp .env.example .env.local   # add OPENAI_API_KEY
+cp .env.example .env.local   # add OPENAI_API_KEY (or vercel env pull .env.local)
 npm run dev                  # http://localhost:3202
-npm test                     # citations, transcripts, ics, body cap, limiter, audio duration
+npm test                     # citations, transcripts, ics, body cap, limiter, Redis counters, audio duration
 npm run lint && npm run build
 ```
 
@@ -75,10 +75,11 @@ The sample audio was generated once with `gpt-4o-mini-tts`, using a different vo
 | `OPENAI_MODEL` | `gpt-5.4-mini` | Model for extraction |
 | `RATE_LIMIT_TRANSCRIBE` | `3` | Transcriptions per IP per window |
 | `RATE_LIMIT_EXTRACT` | `5` | Extractions per IP per window |
-| `RATE_LIMIT_WINDOW_MS` | `3600000` | Rate limit window |
-| `DAILY_AUDIO_MINUTES` | `120` | Audio minutes per instance per UTC day, 503 after that |
+| `RATE_LIMIT_WINDOW_MS` | `3600000` | Rate limit window, started by the first counted request |
+| `DAILY_AUDIO_MINUTES` | `120` | Audio minutes per UTC day across the whole deployment, 503 after that |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | none | Upstash Redis REST credentials for the shared counters. Set by the Vercel integration; without them counts stay in memory |
 
-The rate limiter and the audio budget are in memory, so each serverless instance keeps its own counts and several warm instances allow that many times the budget. The IP key is only as trustworthy as the proxy in front of the app. Vercel overwrites `x-real-ip`, but behind a proxy that passes client headers through, a caller can pick their own key. That's fine for a demo. A shared store would be needed for strict limits.
+Rate limits and the audio budget are counted in Upstash Redis, so every instance sees the same numbers. The IP key is only as trustworthy as the proxy in front of the app. Vercel overwrites `x-real-ip`, but behind a proxy that passes client headers through, a caller can pick their own key.
 
 ## Related
 

@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     return fail(400, 'Send the audio as multipart form data in a "file" field.');
   }
   // Refuse before reading the upload when this IP is already over its limit.
-  const peek = isBlocked(req, 'transcribe');
+  const peek = await isBlocked(req, 'transcribe');
   if (peek) return tooMany(peek);
 
   const body = await readCapped(req, MAX_AUDIO_BYTES + FORM_OVERHEAD);
@@ -69,10 +69,11 @@ export async function POST(req: Request) {
   if (seconds === null) return fail(415, 'Could not read the length of this audio. Try mp3, wav or a fresh recording.');
   if (seconds > MAX_AUDIO_SECONDS) return fail(413, `Audio must be ${MAX_AUDIO_SECONDS / 60} minutes or shorter.`);
 
-  const gate = check(req, 'transcribe');
-  if (!gate.ok) return tooMany(gate.retryAfter);
+  const gate = await check(req, 'transcribe');
+  if (!gate.ok) return tooMany(gate);
   const reserved = seconds + refSeconds;
-  if (!audioBudget.take(reserved)) return budgetSpent();
+  const spend = await audioBudget.take(reserved);
+  if (!spend.ok) return budgetSpent(spend);
 
   try {
     const upload = await toFile(Buffer.from(audio), `meeting.${ext}`, {
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
     })) as unknown as TranscriptionDiarized;
 
     // The header can understate the length; charge the budget what OpenAI actually processed.
-    if (res.duration > seconds) audioBudget.add(res.duration - seconds);
+    if (res.duration > seconds) await audioBudget.add(res.duration - seconds);
     const segments = normalizeSegments(res.segments ?? []);
     if (!segments.length) return fail(422, 'No speech was found in this audio.');
     const duration = res.duration || segments.at(-1)!.end;
