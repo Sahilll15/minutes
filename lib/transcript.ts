@@ -2,6 +2,11 @@ import type { Segment } from './types.ts';
 
 export type RawSegment = { start: number; end: number; speaker: string; text: string };
 
+/** Whisper returns timed segments without speakers, so all of them share label A. */
+export function undiarized(segments: { start: number; end: number; text: string }[]): RawSegment[] {
+  return segments.map(({ start, end, text }) => ({ start, end, text, speaker: 'A' }));
+}
+
 const MAX_GAP = 1.2;
 const MAX_TURN = 15;
 const MAX_CHARS = 320;
