@@ -3,14 +3,16 @@ import type { TranscriptionDiarized } from 'openai/resources/audio/transcription
 import { audioDurationSeconds } from '@/lib/audio-duration';
 import { audioExt, FORM_OVERHEAD, MAX_AUDIO_BYTES, MAX_AUDIO_SECONDS, MAX_REF_BYTES, MAX_REF_SECONDS, MAX_REFS } from '@/lib/limits';
 import { readCapped } from '@/app/server/body';
-import { normalizeSegments, speakerLabels } from '@/lib/transcript';
-import { fail, openai, TRANSCRIBE_MODEL, upstreamError } from '@/app/server/openai';
+import { normalizeSegments, speakerLabels, undiarized, type RawSegment } from '@/lib/transcript';
+import { fail, transcribeRoutes, upstreamError, withFallback } from '@/app/server/openai';
 import { audioBudget, budgetSpent, check, isBlocked, tooMany } from '@/app/server/ratelimit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
 const TOO_BIG = 'Audio must be 4 MB or smaller.';
+
+type Transcribed = { duration: number; segments: RawSegment[] };
 
 function audioMime(f: File) {
   if (f.type.startsWith('audio/')) return f.type;
@@ -76,20 +78,25 @@ export async function POST(req: Request) {
   if (!spend.ok) return budgetSpent(spend);
 
   try {
-    const upload = await toFile(Buffer.from(audio), `meeting.${ext}`, {
-      type: file.type || `audio/${ext}`,
-    });
+    const upload = () => toFile(Buffer.from(audio), `meeting.${ext}`, { type: file.type || `audio/${ext}` });
     const references = refBytes.map((bytes, i) => `data:${audioMime(refs[i] as File)};base64,${Buffer.from(bytes).toString('base64')}`);
-    // diarized_json is the only format that carries speaker labels; chunking is required past 30s.
-    const res = (await openai().audio.transcriptions.create({
-      model: TRANSCRIBE_MODEL,
-      file: upload,
-      response_format: 'diarized_json',
-      chunking_strategy: 'auto',
-      ...(names.length ? { known_speaker_names: names, known_speaker_references: references } : {}),
-    })) as unknown as TranscriptionDiarized;
+    const { result: res } = await withFallback(transcribeRoutes(), async (client, { provider, model }): Promise<Transcribed> => {
+      if (provider === 'groq') {
+        // Whisper on Groq has no diarization or known speakers, so the whole meeting gets one speaker label.
+        const out = await client.audio.transcriptions.create({ model, file: await upload(), response_format: 'verbose_json', timestamp_granularities: ['segment'] });
+        return { duration: out.duration, segments: undiarized(out.segments ?? []) };
+      }
+      // diarized_json is the only format that carries speaker labels; chunking is required past 30s.
+      return (await client.audio.transcriptions.create({
+        model,
+        file: await upload(),
+        response_format: 'diarized_json',
+        chunking_strategy: 'auto',
+        ...(names.length ? { known_speaker_names: names, known_speaker_references: references } : {}),
+      })) as unknown as TranscriptionDiarized;
+    });
 
-    // The header can understate the length; charge the budget what OpenAI actually processed.
+    // The header can understate the length; charge the budget what the provider actually processed.
     if (res.duration > seconds) await audioBudget.add(res.duration - seconds);
     const segments = normalizeSegments(res.segments ?? []);
     if (!segments.length) return fail(422, 'No speech was found in this audio.');

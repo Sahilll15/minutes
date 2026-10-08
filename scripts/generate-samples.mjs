@@ -1,5 +1,6 @@
 // One-off dev script: node --env-file=.env.local scripts/generate-samples.mjs [id...]
 // Renders each sample script with gpt-4o-mini-tts, one voice per speaker, into public/samples/<id>.mp3.
+// Set GROQ_TTS_MODEL (and GROQ_TTS_VOICE) to render with Groq instead, which ignores the per-speaker voices.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -7,7 +8,10 @@ import path from 'node:path';
 import OpenAI from 'openai';
 
 const root = path.resolve(import.meta.dirname, '..');
-const client = new OpenAI();
+const groqModel = process.env.GROQ_TTS_MODEL;
+const client = groqModel
+  ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1' })
+  : new OpenAI();
 const only = process.argv.slice(2);
 
 const files = readdirSync(path.join(root, 'samples')).filter((f) => f.endsWith('.json'));
@@ -20,13 +24,11 @@ for (const file of files) {
 
   for (const [i, [speaker, text]] of script.lines.entries()) {
     const { voice, instructions } = script.speakers[speaker];
-    const res = await client.audio.speech.create({
-      model: 'gpt-4o-mini-tts',
-      voice,
-      input: text,
-      instructions,
-      response_format: 'wav',
-    });
+    const res = await client.audio.speech.create(
+      groqModel
+        ? { model: groqModel, voice: process.env.GROQ_TTS_VOICE || 'troy', input: text, response_format: 'wav' }
+        : { model: 'gpt-4o-mini-tts', voice, input: text, instructions, response_format: 'wav' },
+    );
     const out = path.join(work, `${String(i).padStart(3, '0')}.wav`);
     writeFileSync(out, Buffer.from(await res.arrayBuffer()));
     parts.push(out);

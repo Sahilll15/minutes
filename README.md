@@ -86,6 +86,10 @@ The sample audio was generated once with `gpt-4o-mini-tts`, using a different vo
 | --- | --- | --- |
 | `OPENAI_API_KEY` | none | Server-side key, never sent to the browser |
 | `OPENAI_MODEL` | `gpt-5.4-mini` | Model for extraction |
+| `GROQ_API_KEY` | none | When set, extraction and transcription use Groq first and OpenAI is the fallback. Groq's Whisper returns one speaker, without diarization |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` | Groq model for extraction |
+| `GROQ_TRANSCRIBE_MODEL` | `whisper-large-v3-turbo` | Groq transcription model |
+| `GROQ_TTS_MODEL` | none | Sample audio script only. When set, it renders with Groq instead of `gpt-4o-mini-tts` |
 | `RATE_LIMIT_TRANSCRIBE` | `3` | Transcriptions per IP per window |
 | `RATE_LIMIT_EXTRACT` | `5` | Extractions per IP per window |
 | `RATE_LIMIT_WINDOW_MS` | `3600000` | Rate limit window, started by the first counted request |

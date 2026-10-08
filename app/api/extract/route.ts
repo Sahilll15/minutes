@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ExtractionSchema, isIsoDate, normalizeExtraction } from '@/lib/extraction';
 import { MAX_EXTRACT_BODY, MAX_SEGMENTS, MAX_TRANSCRIPT_CHARS } from '@/lib/limits';
 import { speakerName, transcriptForPrompt } from '@/lib/transcript';
-import { fail, openai, TEXT_MODEL, upstreamError } from '@/app/server/openai';
+import { fail, textRoutes, upstreamError, withFallback } from '@/app/server/openai';
 import { readCapped } from '@/app/server/body';
 import { check, isBlocked, tooMany } from '@/app/server/ratelimit';
 
@@ -73,18 +73,20 @@ export async function POST(req: Request) {
   const names = [...new Set(segments.map((s) => s.speaker))].map((l) => speakerName(l, speakers)).join(', ');
 
   try {
-    const res = await openai().responses.parse({
-      model: TEXT_MODEL,
-      instructions: INSTRUCTIONS,
-      input: `Meeting: ${title}\nDate: ${weekday} ${date}\nSpeakers: ${names}\n\nTranscript:\n${transcript}`,
-      text: { format: zodTextFormat(ExtractionSchema, 'meeting_minutes') },
-      reasoning: { effort: 'low' },
-      max_output_tokens: 6000,
-    });
+    const { result: res, route } = await withFallback(textRoutes(), (client, { model }) =>
+      client.responses.parse({
+        model,
+        instructions: INSTRUCTIONS,
+        input: `Meeting: ${title}\nDate: ${weekday} ${date}\nSpeakers: ${names}\n\nTranscript:\n${transcript}`,
+        text: { format: zodTextFormat(ExtractionSchema, 'meeting_minutes') },
+        reasoning: { effort: 'low' },
+        max_output_tokens: 6000,
+      }),
+    );
     if (!res.output_parsed) {
       return fail(502, res.incomplete_details ? 'The model ran out of room on this transcript.' : 'The model returned no usable minutes.');
     }
-    const extraction = normalizeExtraction(res.output_parsed, segments, speakers, TEXT_MODEL);
+    const extraction = normalizeExtraction(res.output_parsed, segments, speakers, route.model);
     return Response.json({ extraction, usage: res.usage ?? null });
   } catch (err) {
     return upstreamError(err);
