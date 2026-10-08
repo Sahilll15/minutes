@@ -26,13 +26,13 @@ test('routes put Groq first and keep OpenAI as fallback only when its key is set
   assert.equal(transcribeRoutes({ GROQ_API_KEY: 'g', GROQ_TRANSCRIBE_MODEL: 'whisper-large-v3' })[0].model, 'whisper-large-v3');
 });
 
-test('shouldFallBack covers 429, 5xx and network errors but not client errors', () => {
+test('shouldFallBack covers 429, 413, 5xx and network errors but not client errors', () => {
   assert.equal(shouldFallBack(apiError(429)), true);
+  assert.equal(shouldFallBack(apiError(413)), true);
   assert.equal(shouldFallBack(apiError(502)), true);
   assert.equal(shouldFallBack(new OpenAI.APIConnectionError({ message: 'down' })), true);
   assert.equal(shouldFallBack(new OpenAI.APIConnectionTimeoutError()), true);
   assert.equal(shouldFallBack(apiError(400)), false);
-  assert.equal(shouldFallBack(apiError(413)), false);
   assert.equal(shouldFallBack(new Error('bug')), false);
 });
 

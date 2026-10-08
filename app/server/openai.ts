@@ -34,11 +34,11 @@ export function transcribeRoutes(env: Env = process.env) {
   return routes(env, env.GROQ_TRANSCRIBE_MODEL || 'whisper-large-v3-turbo', 'gpt-4o-transcribe-diarize');
 }
 
-/** Rate limits, server errors and network failures are worth another provider; a bad request is not. */
+/** Rate limits (429, or 413 for one request over the token budget), server errors and network failures are worth another provider; a bad request is not. */
 export function shouldFallBack(err: unknown) {
   if (err instanceof OpenAI.APIConnectionError) return true;
   const status = (err as { status?: number })?.status;
-  return status === 429 || (typeof status === 'number' && status >= 500);
+  return status === 429 || status === 413 || (typeof status === 'number' && status >= 500);
 }
 
 export async function withFallback<T>(
